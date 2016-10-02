@@ -3,6 +3,8 @@ import itertools
 import numpy as np
 from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax
 
+from dna import DNA
+
 
 class GridOptimizer:
 
@@ -76,6 +78,14 @@ class GridAdamax(GridOptimizer):
         super().__init__(Adamax, {"lr": lrs})
 
 
+class GridDNA(GridOptimizer):
+
+    def __init__(self, lrs):
+        if not any(np.isclose(lrs, 0.001)):
+            lrs = list(lrs) + [0.001]
+        super().__init__(DNA, {"lr": lrs})
+
+
 OPTIMIZERS_INDEX = {
     "sgd": GridSGD,
     "sgdmomentum": GridSGDMomentum,
@@ -84,6 +94,7 @@ OPTIMIZERS_INDEX = {
     "adagrad": GridAdagrad,
     "adadelta": GridAdadelta,
     "adam": GridAdam,
-    "adamax": GridAdamax
+    "adamax": GridAdamax,
+    "dna": GridDNA
 }
 

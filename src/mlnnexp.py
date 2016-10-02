@@ -11,6 +11,7 @@ from keras.datasets import mnist
 from keras.utils import np_utils
 
 from gridopts import *
+from dna import DNAMonitor
 
 LRS = np.logspace(-6, -1, 10)
 BATCH_SIZE = 128
@@ -36,14 +37,23 @@ for opt in grid_opt:
     model.add(Dense(10, activation="softmax", W_regularizer=l2(0.0001)))
 
     model.compile(optimizer=opt, loss="categorical_crossentropy")
-    history = model.fit(x=X_train, y=y_train, batch_size=BATCH_SIZE, nb_epoch=EPOCHS, verbose=1)
+    if args.optimizer == "dna":
+        dna_monitor = DNAMonitor()
+        callbacks = [dna_monitor]
+    else:
+        callbacks = []
+    history = model.fit(x=X_train, y=y_train, batch_size=BATCH_SIZE, nb_epoch=EPOCHS, verbose=1, callbacks=callbacks)
 
     if history.history["loss"][-1] < best_final_loss:
         best_final_loss = history.history["loss"][-1]
         best_loss_history = history.history["loss"]
         best_opt_config = opt.get_config()
+        best_dna_monitor = dna_monitor
 
 save_data = {"best_loss_history": best_loss_history, "param_grid": grid_opt.grid, "best_opt_config": best_opt_config}
+if args.optimizer == "dna":
+    save_data["best_batch_loss_history"] = best_dna_monitor.batch_losses
+    save_data["ds"] = best_dna_monitor.ds
 with open(os.path.join("data", "mlnnexp", "{}.pkl".format(args.optimizer)), "wb") as f:
     pickle.dump(save_data, f)
 
