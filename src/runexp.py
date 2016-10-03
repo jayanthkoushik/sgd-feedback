@@ -4,7 +4,7 @@ import os
 from argparse import ArgumentParser
 
 import numpy as np
-from keras.datasets import mnist
+from keras.datasets import mnist, cifar10
 from keras.utils import np_utils
 
 from gridopts import *
@@ -12,15 +12,16 @@ from models import *
 from dna import DNAMonitor
 
 LRS = np.logspace(-6, -1, 10)
-DATASET_LOADERS = {
-    "mnist": mnist.load_data
+DATASET_INFO = {
+    "mnist": {"loader": mnist.load_data, "nb_classes": 10},
+    "cifar10": {"loader": cifar10.load_data, "nb_classes": 10}
 }
 
 arg_parser = ArgumentParser()
 arg_parser.add_argument("--optimizer", type=str, required=True, choices=OPTIMIZERS_INDEX.keys())
 arg_parser.add_argument("--opt-args", type=json.loads, default={})
 arg_parser.add_argument("--model", type=str, required=True, choices=MODEL_FACTORIES.keys())
-arg_parser.add_argument("--dataset", type=str, required=True, choices=DATASET_LOADERS.keys())
+arg_parser.add_argument("--dataset", type=str, required=True, choices=DATASET_INFO.keys())
 arg_parser.add_argument("--batch-size", type=int, required=True)
 arg_parser.add_argument("--epochs", type=int, required=True)
 args = arg_parser.parse_args()
@@ -28,14 +29,16 @@ args = arg_parser.parse_args()
 args.opt_args["lrs"] = LRS
 grid_opt = OPTIMIZERS_INDEX[args.optimizer](**args.opt_args)
 
-(X_train, y_train), _ = DATASET_LOADERS[args.dataset]()
-X_train = X_train.reshape((X_train.shape[0], -1)).astype("float32") / 255.
-y_train = np_utils.to_categorical(y_train, 10)
+(X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"]()
+X_train = X_train.astype("float32") / 255.
+if args.model == "mlnn":
+    X_train = X_train.reshape((X_train.shape[0], -1))
+y_train = np_utils.to_categorical(y_train, DATASET_INFO[args.dataset]["nb_classes"])
 
 best_final_loss = np.inf
 for opt in grid_opt:
-    model = MODEL_FACTORIES[args.model]()
-    model.compile(optimizer=opt, loss="categorical_crossentropy")
+    model = MODEL_FACTORIES[args.model](X_train.shape[1:], DATASET_INFO[args.dataset]["nb_classes"])
+    model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
     if args.optimizer == "dna":
         dna_monitor = DNAMonitor()
         callbacks = [dna_monitor]
@@ -60,6 +63,9 @@ save_data = {
 if args.optimizer == "dna":
     save_data["best_batch_loss_history"] = best_dna_monitor.batch_losses
     save_data["ds"] = best_dna_monitor.ds
-with open(os.path.join("data", "{}".format(args.model), "{}".format(args.dataset), "{}.pkl".format(args.optimizer)), "wb") as f:
+save_dir = os.path.join("data", "{}".format(args.model), "{}".format(args.dataset))
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+with open(os.path.join(save_dir, "{}.pkl".format(args.optimizer)), "wb") as f:
     pickle.dump(save_data, f)
 
