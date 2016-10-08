@@ -45,7 +45,14 @@ class DNA(Optimizer):
         return self.updates
 
     def get_config(self):
-        return {"d": self.d.get_value()}
+	config = {
+	    "lr": float(K.get_value(self.lr)),
+	    "beta_1": float(K.get_value(self.beta_1)),
+	    "beta_2": float(K.get_value(self.beta_2)),
+	    "epsilon": self.epsilon
+        }
+        base_config = super(DNA, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 class DNAMonitor(Callback):
@@ -56,5 +63,5 @@ class DNAMonitor(Callback):
 
     def on_batch_end(self, batch, logs={}):
         self.batch_losses.append(logs.get("loss"))
-        self.ds.append(self.model.optimizer.get_config()["d"])
+        self.ds.append(self.model.optimizer.d.get_value())
 

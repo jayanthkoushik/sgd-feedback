@@ -11,7 +11,6 @@ from gridopts import *
 from models import *
 from dna import DNAMonitor
 
-LRS = np.logspace(-6, -1, 10)
 DATASET_INFO = {
     "mnist": {"loader": mnist.load_data, "nb_classes": 10},
     "cifar10": {"loader": cifar10.load_data, "nb_classes": 10}
@@ -19,7 +18,7 @@ DATASET_INFO = {
 
 arg_parser = ArgumentParser()
 arg_parser.add_argument("--optimizer", type=str, required=True, choices=OPTIMIZERS_INDEX.keys())
-arg_parser.add_argument("--opt-args", type=json.loads, default={})
+arg_parser.add_argument("--opt-args", type=json.loads, required=True)
 arg_parser.add_argument("--model", type=str, required=True, choices=MODEL_FACTORIES.keys())
 arg_parser.add_argument("--dataset", type=str, required=True, choices=DATASET_INFO.keys())
 arg_parser.add_argument("--batch-size", type=int, required=True)
@@ -27,7 +26,6 @@ arg_parser.add_argument("--epochs", type=int, required=True)
 arg_parser.add_argument("--save-path", type=str, required=True)
 args = arg_parser.parse_args()
 
-args.opt_args["lrs"] = LRS
 grid_opt = OPTIMIZERS_INDEX[args.optimizer](**args.opt_args)
 
 (X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"]()
@@ -58,8 +56,7 @@ save_data = {
     "best_loss_history": best_loss_history,
     "param_grid": grid_opt.grid,
     "best_opt_config": best_opt_config,
-    "batch_size": args.batch_size,
-    "epochs": args.epochs
+    "cmd_args": args,
 }
 if args.optimizer == "dna":
     save_data["best_batch_loss_history"] = best_dna_monitor.batch_losses
