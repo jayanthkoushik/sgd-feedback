@@ -70,12 +70,28 @@ class GridAdam(GridOptimizer):
         super().__init__(Adam, {"lr": lrs})
 
 
+class GridAdamDecay(GridOptimizer):
+
+    def __init__(self, lrs, decays):
+        if not any(np.isclose(lrs, 0.001)):
+            lrs = list(lrs) + [0.001]
+        super().__init__(Adam, {"lr": lrs, "decay": decays})
+
+
 class GridAdamax(GridOptimizer):
 
     def __init__(self, lrs):
         if not any(np.isclose(lrs, 0.002)):
             lrs = list(lrs) + [0.002]
         super().__init__(Adamax, {"lr": lrs})
+
+
+class GridAdamaxDecay(GridOptimizer):
+
+    def __init__(self, lrs, decays):
+        if not any(np.isclose(lrs, 0.002)):
+            lrs = list(lrs) + [0.002]
+        super().__init__(Adamax, {"lr": lrs, "decay": decays})
 
 
 class GridDNA(GridOptimizer):
@@ -94,7 +110,9 @@ OPTIMIZERS_INDEX = {
     "adagrad": GridAdagrad,
     "adadelta": GridAdadelta,
     "adam": GridAdam,
+    "adamdecay": GridAdamDecay,
     "adamax": GridAdamax,
+    "adamaxdecay": GridAdamaxDecay,
     "dna": GridDNA
 }
 
