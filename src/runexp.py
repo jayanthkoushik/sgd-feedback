@@ -24,6 +24,7 @@ arg_parser.add_argument("--model", type=str, required=True, choices=MODEL_FACTOR
 arg_parser.add_argument("--dataset", type=str, required=True, choices=DATASET_INFO.keys())
 arg_parser.add_argument("--batch-size", type=int, required=True)
 arg_parser.add_argument("--epochs", type=int, required=True)
+arg_parser.add_argument("--save-path", type=str, required=True)
 args = arg_parser.parse_args()
 
 args.opt_args["lrs"] = LRS
@@ -63,9 +64,6 @@ save_data = {
 if args.optimizer == "dna":
     save_data["best_batch_loss_history"] = best_dna_monitor.batch_losses
     save_data["ds"] = best_dna_monitor.ds
-save_dir = os.path.join("data", "{}".format(args.model), "{}".format(args.dataset))
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-with open(os.path.join(save_dir, "{}.pkl".format(args.optimizer)), "wb") as f:
+with open(args.save_path, "wb") as f:
     pickle.dump(save_data, f)
 
