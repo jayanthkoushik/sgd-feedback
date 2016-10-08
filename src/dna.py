@@ -45,7 +45,7 @@ class DNA(Optimizer):
         return self.updates
 
     def get_config(self):
-	config = {
+        config = {
 	    "lr": float(K.get_value(self.lr)),
 	    "beta_1": float(K.get_value(self.beta_1)),
 	    "beta_2": float(K.get_value(self.beta_2)),
