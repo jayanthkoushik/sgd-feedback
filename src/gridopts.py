@@ -74,10 +74,10 @@ class GridAdamax(GridOptimizer):
 
 class GridDNA(GridOptimizer):
 
-    def __init__(self, lrs):
+    def __init__(self, lrs, decays):
         if not any(np.isclose(lrs, 0.001)):
             lrs = list(lrs) + [0.001]
-        super().__init__(DNA, {"lr": lrs})
+        super().__init__(DNA, {"lr": lrs, "decay": decays})
 
 
 OPTIMIZERS_INDEX = {

@@ -1,6 +1,5 @@
 import json
 import pickle
-import os
 from argparse import ArgumentParser
 
 import numpy as np
