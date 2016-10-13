@@ -4,7 +4,6 @@ import numpy as np
 from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax
 
 from dna import DNA
-from dnamax import DNAMax
 
 
 class GridOptimizer:
