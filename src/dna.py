@@ -5,7 +5,7 @@ from keras.callbacks import Callback
 
 class DNA(Optimizer):
 
-    def __init__(self, lr, beta_1=0.9, beta_2=0.999, beta_3=0.999, epsilon=1e-8, decay=0.):
+    def __init__(self, lr=0.0001, beta_1=0.9, beta_2=0.999, beta_3=0.999, epsilon=1e-4, decay=0.):
         super(DNA, self).__init__()
         self.__dict__.update(locals())
         self.iterations = K.variable(0)

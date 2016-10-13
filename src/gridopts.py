@@ -4,6 +4,7 @@ import numpy as np
 from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax
 
 from dna import DNA
+from dnamax import DNAMax
 
 
 class GridOptimizer:
@@ -75,8 +76,8 @@ class GridAdamax(GridOptimizer):
 class GridDNA(GridOptimizer):
 
     def __init__(self, lrs, decays):
-        if not any(np.isclose(lrs, 0.001)):
-            lrs = list(lrs) + [0.001]
+        if not any(np.isclose(lrs, 0.0001)):
+            lrs = list(lrs) + [0.0001]
         super().__init__(DNA, {"lr": lrs, "decay": decays})
 
 
