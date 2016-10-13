@@ -3,7 +3,7 @@ import pickle
 from argparse import ArgumentParser
 
 import numpy as np
-from keras.datasets import mnist, cifar10
+from keras.datasets import mnist, cifar10, cifar100
 from keras.utils import np_utils
 
 from gridopts import *
@@ -12,7 +12,8 @@ from dna import DNAMonitor
 
 DATASET_INFO = {
     "mnist": {"loader": mnist.load_data, "nb_classes": 10},
-    "cifar10": {"loader": cifar10.load_data, "nb_classes": 10}
+    "cifar10": {"loader": cifar10.load_data, "nb_classes": 10},
+    "cifar100": {"loader": cifar100.load_data, "nb_classes": 100}
 }
 
 arg_parser = ArgumentParser()
@@ -23,13 +24,17 @@ arg_parser.add_argument("--dataset", type=str, required=True, choices=DATASET_IN
 arg_parser.add_argument("--batch-size", type=int, required=True)
 arg_parser.add_argument("--epochs", type=int, required=True)
 arg_parser.add_argument("--save-path", type=str, required=True)
+arg_parser.add_argument("--n-samples", type=int, default=None)
+arg_parser.add_argument("--flatten", action="store_true")
 args = arg_parser.parse_args()
 
 grid_opt = OPTIMIZERS_INDEX[args.optimizer](**args.opt_args)
 
 (X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"]()
+if args.n_samples is not None:
+    X_train, y_train = X_train[:args.n_samples], y_train[:args.n_samples]
 X_train = X_train.astype("float32") / 255.
-if args.model == "mlnn":
+if args.flatten:
     X_train = X_train.reshape((X_train.shape[0], -1))
 y_train = np_utils.to_categorical(y_train, DATASET_INFO[args.dataset]["nb_classes"])
 
