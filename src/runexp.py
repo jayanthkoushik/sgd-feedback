@@ -53,6 +53,7 @@ for opt in grid_opt:
         best_final_loss = history.history["loss"][-1]
         best_loss_history = history.history["loss"]
         best_opt_config = opt.get_config()
+        best_decay = opt.decay.get_value()
         if args.optimizer == "dna":
             best_dna_monitor = dna_monitor
 
@@ -60,6 +61,7 @@ save_data = {
     "best_loss_history": best_loss_history,
     "param_grid": grid_opt.grid,
     "best_opt_config": best_opt_config,
+    "best_decay": best_decay,
     "cmd_args": args,
 }
 if args.optimizer == "dna":
