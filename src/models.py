@@ -85,6 +85,7 @@ def get_logistic_model(input_shape, nb_classes):
 def get_bigru_model(args):
     model = Sequential()
     model.add(Embedding(args.n_vocab, args.embed_dim, input_length=args.max_len))
+    model.add(Bidirectional(GRU(args.hidden_dim, return_sequences=True, input_shape=(args.max_len, args.hidden_dim))))
     model.add(Bidirectional(GRU(args.hidden_dim)))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
