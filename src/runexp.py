@@ -3,7 +3,8 @@ import pickle
 from argparse import ArgumentParser
 
 import numpy as np
-from keras.datasets import mnist, cifar10, cifar100
+from keras.preprocessing import sequence
+from keras.datasets import mnist, cifar10, cifar100, imdb
 from keras.utils import np_utils
 
 from gridopts import *
@@ -24,10 +25,20 @@ def pre_process_image(args):
     return X_train, y_train
 
 
+def pre_process_text(args):
+    (X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"](nb_words=args.n_vocab)
+    if args.n_samples is not None:
+        X_train, y_train = X_train[:args.n_samples], y_train[:args.n_samples]
+    X_train = sequence.pad_sequences(X_train, maxlen=args.max_len)
+    y_train = np.array(y_train)
+    return X_train, y_train
+
+
 DATASET_INFO = {
     "mnist": {"loader": mnist.load_data, "nb_classes": 10, "preprocess": pre_process_image},
     "cifar10": {"loader": cifar10.load_data, "nb_classes": 10, "preprocess": pre_process_image},
-    "cifar100": {"loader": cifar100.load_data, "nb_classes": 100, "preprocess": pre_process_image}
+    "cifar100": {"loader": cifar100.load_data, "nb_classes": 100, "preprocess": pre_process_image},
+    "imdb": {"loader": imdb.load_data, "nb_classes": 2, "preprocess": pre_process_text}
 }
 
 
@@ -40,6 +51,10 @@ arg_parser.add_argument("--batch-size", type=int, required=True)
 arg_parser.add_argument("--epochs", type=int, required=True)
 arg_parser.add_argument("--save-path", type=str, required=True)
 arg_parser.add_argument("--n-samples", type=int, default=None)
+arg_parser.add_argument("--max-len", type=int, default=100)  # text hyperparam.
+arg_parser.add_argument("--n-vocab", type=int, default=20000)  # text hyperparam.
+arg_parser.add_argument("--embed-dim", type=int, default=256)  # text hyperparam.
+arg_parser.add_argument("--hidden-dim", type=int, default=256)  # text hyperparam.
 arg_parser.add_argument("--flatten", action="store_true")
 args = arg_parser.parse_args()
 
@@ -49,8 +64,12 @@ X_train, y_train = DATASET_INFO[args.dataset]["preprocess"](args)
 
 best_final_loss = np.inf
 for opt in grid_opt:
-    model = MODEL_FACTORIES[args.model](X_train.shape[1:], DATASET_INFO[args.dataset]["nb_classes"])
-    model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
+    if args.model == 'bigru':
+        model = MODEL_FACTORIES[args.model](args)
+        model.compile(optimizer=opt, loss="binary_crossentropy", metrics=["accuracy"])
+    else:
+        model = MODEL_FACTORIES[args.model](X_train.shape[1:], DATASET_INFO[args.dataset]["nb_classes"])
+        model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
     if args.optimizer == "dna":
         dna_monitor = DNAMonitor()
         callbacks = [dna_monitor]

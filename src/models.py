@@ -1,5 +1,6 @@
 from keras.models import Sequential
 from keras.layers import Dense, Convolution2D, MaxPooling2D, Dropout, Flatten
+from keras.layers import Embedding, GRU, Input, Bidirectional
 from keras.regularizers import l2
 
 
@@ -81,11 +82,20 @@ def get_logistic_model(input_shape, nb_classes):
     return model
 
 
+def get_bigru_model(args):
+    model = Sequential()
+    model.add(Embedding(args.n_vocab, args.embed_dim, input_length=args.max_len))
+    model.add(Bidirectional(GRU(args.hidden_dim)))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
+    return model
+
 MODEL_FACTORIES = {
     "mlnn": get_mlnn_model,
     "cnn": get_cnn_model,
     "big_cnn": get_big_cnn_model,
     "fixed_cnn": get_fixed_cnn_model,
-    "logistic": get_logistic_model
+    "logistic": get_logistic_model,
+    "bigru": get_bigru_model
 }
 
