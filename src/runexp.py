@@ -34,6 +34,8 @@ grid_opt = OPTIMIZERS_INDEX[args.optimizer](**args.opt_args)
 if args.n_samples is not None:
     X_train, y_train = X_train[:args.n_samples], y_train[:args.n_samples]
 X_train = X_train.astype("float32") / 255.
+if X_train.ndim == 3:
+    X_train = X_train[:, np.newaxis, :, :]
 if args.flatten:
     X_train = X_train.reshape((X_train.shape[0], -1))
 y_train = np_utils.to_categorical(y_train, DATASET_INFO[args.dataset]["nb_classes"])
