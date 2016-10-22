@@ -1,4 +1,6 @@
 import json
+import sys
+import os
 import pickle
 from argparse import ArgumentParser
 
@@ -58,6 +60,13 @@ arg_parser.add_argument("--embed-dim", type=int, default=256)  # text hyperparam
 arg_parser.add_argument("--hidden-dim", type=int, default=256)  # text hyperparam.
 arg_parser.add_argument("--flatten", action="store_true")
 args = arg_parser.parse_args()
+
+try:
+    open(args.save_path, "w+")
+except FileNotFoundError:
+    print("Error: save path is not accessible")
+    sys.exit(1)
+os.remove(args.save_path)
 
 grid_opt = OPTIMIZERS_INDEX[args.optimizer](**args.opt_args)
 
