@@ -15,7 +15,8 @@ from dna import DNAMonitor
 def pre_process_image(args):
     (X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"]()
     if args.n_samples is not None:
-        X_train, y_train = X_train[:args.n_samples], y_train[:args.n_samples]
+        p = np.random.permutation(X_train.shape[0])
+        X_train, y_train = X_train[p][:args.n_samples], y_train[p][:args.n_samples]
     X_train = X_train.astype("float32") / 255.
     if X_train.ndim == 3:
         X_train = X_train[:, np.newaxis, :, :]
