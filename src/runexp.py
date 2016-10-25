@@ -14,7 +14,7 @@ from keras.utils.data_utils import get_file
 from gridopts import *
 from models import *
 from dna import DNAMonitor
-from babi_helper import *
+from babi_sitter import *
 
 def pre_process_image(args):
     (X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"]()
