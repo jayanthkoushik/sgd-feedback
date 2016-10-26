@@ -94,7 +94,7 @@ class DnaAuto:
 
     typ = "auto"
 
-    def __init__(self, f, θs, α=0.001, β1=0.9, β2=0.999, β3=0.999, ε=1e-4, dec=0.):
+    def __init__(self, f, θs, α=0.001, β1=0.9, β2=0.999, β3=0.999, ε=1e-8, dec=0.):
         α, β1, β2, β3, ε, dec = [np.cast[floatX](h) for h in [α, β1, β2, β3, ε, dec]]
 
         t = theano.shared(0, name="t")
