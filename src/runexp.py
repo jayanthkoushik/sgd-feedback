@@ -111,7 +111,7 @@ for opt in grid_opt:
     else:
         model = MODEL_FACTORIES[args.model](X_train.shape[1:], DATASET_INFO[args.dataset]["nb_classes"])
         model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
-    if args.optimizer == "dna":
+    if args.optimizer == "dna" or args.optimizer == "eveprop":
         dna_monitor = DNAMonitor()
         callbacks = [dna_monitor]
     else:
@@ -123,7 +123,7 @@ for opt in grid_opt:
         best_loss_history = history.history["loss"]
         best_opt_config = opt.get_config()
         best_decay = opt.decay.get_value()
-        if args.optimizer == "dna":
+        if args.optimizer == "dna" or args.optimizer == "eveprop":
             best_dna_monitor = dna_monitor
 
 save_data = {
@@ -133,7 +133,7 @@ save_data = {
     "best_decay": best_decay,
     "cmd_args": args,
 }
-if args.optimizer == "dna":
+if args.optimizer == "dna" or args.optimizer == "eveprop":
     save_data["best_batch_loss_history"] = best_dna_monitor.batch_losses
     save_data["ds"] = best_dna_monitor.ds
 with open(args.save_path, "wb") as f:
