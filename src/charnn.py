@@ -25,7 +25,7 @@ arg_parser.add_argument("--seq-size", type=int, required=True)
 arg_parser.add_argument("--batch-size", type=int, required=True)
 arg_parser.add_argument("--num-epochs", type=int, required=True)
 arg_parser.add_argument("--patience", type=int, required=True)
-arg_parser.add_argument("--optimizer", type=str, required=True, choices=["adam", "dna", "rmsprop", "eveprop"])
+arg_parser.add_argument("--optimizer", type=str, required=True, choices=["adam", "dna", "rmsprop"])
 arg_parser.add_argument("--lr", type=float, required=True)
 arg_parser.add_argument("--dec", type=float, required=True)
 args = arg_parser.parse_args()
@@ -175,8 +175,6 @@ elif args.optimizer == "dna":
     opt_fun = DnaAuto
 elif args.optimizer == "rmsprop":
     opt_fun = RmspropAuto
-elif args.optimizer == "eveprop":
-    opt_fun = EvepropAuto
 optimizer = opt_fun(cross_entropy, θs, args.lr, dec=args.dec)
 gen_sample()
 batch_losses, epoch_losses, metric_results = fit_model(X, y, o, X_data, y_data, y_splits, cross_entropy, θs, optimizer, args.batch_size, args.num_epochs,

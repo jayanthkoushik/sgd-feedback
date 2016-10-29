@@ -48,48 +48,6 @@ class RmspropAuto:
             free_shared_variable(p)
 
 
-class EvepropAuto:
-
-    typ = "auto"
-
-    def __init__(self, f, θs, α=0.001, ρ=0.9, β=0.999, ε=1e-8, dec=0.):
-        α, ρ, β, ε, dec = [np.cast[floatX](h) for h in [α, ρ, β, ε, dec]]
-
-        t = theano.shared(0, name="t")
-        t_u = (t, t + 1)
-
-        f_prev = theano.shared(np.cast[floatX](0), name="f_prev")
-
-        ch_fact_lbound = T.switch(T.gt(f, f_prev), 1.1, 1/11.)
-        ch_fact_ubound = T.switch(T.gt(f, f_prev), 11., 1/1.1)
-        f_ch_fact = f / f_prev
-        f_ch_fact = T.switch(T.lt(f_ch_fact, ch_fact_lbound), ch_fact_lbound, f_ch_fact)
-        f_ch_fact = T.switch(T.gt(f_ch_fact, ch_fact_ubound), ch_fact_ubound, f_ch_fact)
-        f_hat = T.switch(T.gt(t_u[1], 1), f_prev * f_ch_fact, f)
-        f_u = (f_prev, f_hat)
-
-        d = theano.shared(one, name="d")
-        d_den = T.switch(T.gt(f_hat, f_prev), f_prev, f_hat)
-        d_t = (β * d) + (one - β) * T.abs_((f_hat - f_prev) / d_den)
-        d_t = T.switch(T.gt(t_u[1], 1), d_t, one)
-        d_u = (d, d_t)
-
-        gs = T.grad(f, θs)
-
-        self.accs = [theano.shared(np.zeros(θ.shape.eval(), dtype=floatX), borrow=True, name="a") for θ in θs]
-        acc_us = [(acc, (ρ * acc) + (one - ρ) * T.sqr(g)) for acc, g in zip(self.accs, gs)]
-
-        θ_us = [(θ, θ - ((α / (one + (t_u[1] * dec))) * g / (T.sqrt(acc_u[1]) * d_t + ε))) for θ, g, acc_u in zip(θs, gs, acc_us)]
-        self.updates = acc_us + θ_us + [t_u, f_u, d_u]
-
-    def __call__(self):
-        return self.updates
-
-    def free_shared(self):
-        for p in self.accs:
-            free_shared_variable(p)
-
-
 class DnaAuto:
 
     typ = "auto"
