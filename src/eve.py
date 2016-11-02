@@ -3,16 +3,18 @@ from keras.optimizers import Optimizer
 from keras.callbacks import Callback
 
 
-class DNA(Optimizer):
+class Eve(Optimizer):
 
-    def __init__(self, lr=0.0001, beta_1=0.9, beta_2=0.999, beta_3=0.999, epsilon=1e-8, decay=0.):
-        super(DNA, self).__init__()
+    def __init__(self, lr=0.001, beta_1=0.9, beta_2=0.999, beta_3=0.999, epsilon=1e-8, thl=0.1, thu=10., decay=0.):
+        super(Eve, self).__init__()
         self.__dict__.update(locals())
         self.iterations = K.variable(0)
         self.lr = K.variable(lr)
         self.beta_1 = K.variable(beta_1)
         self.beta_2 = K.variable(beta_2)
         self.beta_3 = K.variable(beta_3)
+        self.thl = K.variable(thl)
+        self.thu = K.variable(thu)
         self.decay = K.variable(decay)
         self.d = K.variable(1)
 
@@ -27,8 +29,8 @@ class DNA(Optimizer):
         ms = [K.zeros(shape) for shape in shapes]
         vs = [K.zeros(shape) for shape in shapes]
 
-        ch_fact_lbound = K.switch(K.greater(loss, loss_prev), 1.1, 1/11.)
-        ch_fact_ubound = K.switch(K.greater(loss, loss_prev), 11., 1/1.1)
+        ch_fact_lbound = K.switch(K.greater(loss, loss_prev), 1+self.thl, 1/(1+self.thu))
+        ch_fact_ubound = K.switch(K.greater(loss, loss_prev), 1+self.thu, 1/(1+self.thl))
         loss_ch_fact = loss / loss_prev
         loss_ch_fact = K.switch(K.lesser(loss_ch_fact, ch_fact_lbound), ch_fact_lbound, loss_ch_fact)
         loss_ch_fact = K.switch(K.greater(loss_ch_fact, ch_fact_ubound), ch_fact_ubound, loss_ch_fact)
@@ -63,11 +65,11 @@ class DNA(Optimizer):
 	    "epsilon": self.epsilon,
             "decay": float(K.get_value(self.decay))
         }
-        base_config = super(DNA, self).get_config()
+        base_config = super(Eve, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class DNAMonitor(Callback):
+class EveMonitor(Callback):
 
     def on_train_begin(self, logs={}):
         self.batch_losses = []

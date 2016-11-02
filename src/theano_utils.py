@@ -48,11 +48,11 @@ class RmspropAuto:
             free_shared_variable(p)
 
 
-class DnaAuto:
+class EveAuto:
 
     typ = "auto"
 
-    def __init__(self, f, θs, α=0.001, β1=0.9, β2=0.999, β3=0.999, ε=1e-8, dec=0.):
+    def __init__(self, f, θs, α=0.001, β1=0.9, β2=0.999, β3=0.999, k=0.1, K=10., ε=1e-8, dec=0.):
         α, β1, β2, β3, ε, dec = [np.cast[floatX](h) for h in [α, β1, β2, β3, ε, dec]]
 
         t = theano.shared(0, name="t")
@@ -60,8 +60,8 @@ class DnaAuto:
 
         f_prev = theano.shared(np.cast[floatX](0), name="f_prev")
 
-        ch_fact_lbound = T.switch(T.gt(f, f_prev), 1.1, 1/11.)
-        ch_fact_ubound = T.switch(T.gt(f, f_prev), 11., 1/1.1)
+        ch_fact_lbound = T.switch(T.gt(f, f_prev), 1+k, 1/(1+K))
+        ch_fact_ubound = T.switch(T.gt(f, f_prev), 1+K, 1/(1+k))
         f_ch_fact = f / f_prev
         f_ch_fact = T.switch(T.lt(f_ch_fact, ch_fact_lbound), ch_fact_lbound, f_ch_fact)
         f_ch_fact = T.switch(T.gt(f_ch_fact, ch_fact_ubound), ch_fact_ubound, f_ch_fact)

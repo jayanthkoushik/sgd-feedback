@@ -25,7 +25,7 @@ arg_parser.add_argument("--seq-size", type=int, required=True)
 arg_parser.add_argument("--batch-size", type=int, required=True)
 arg_parser.add_argument("--num-epochs", type=int, required=True)
 arg_parser.add_argument("--patience", type=int, required=True)
-arg_parser.add_argument("--optimizer", type=str, required=True, choices=["adam", "dna", "rmsprop"])
+arg_parser.add_argument("--optimizer", type=str, required=True, choices=["adam", "eve", "rmsprop"])
 arg_parser.add_argument("--lr", type=float, required=True)
 arg_parser.add_argument("--dec", type=float, required=True)
 args = arg_parser.parse_args()
@@ -171,8 +171,8 @@ def gen_sample():
 θs = Wzs + Wrs + Whs + bzs + brs + bhs + [Wo, bo]
 if args.optimizer == "adam":
     opt_fun = AdamAuto
-elif args.optimizer == "dna":
-    opt_fun = DnaAuto
+elif args.optimizer == "eve":
+    opt_fun = EveAuto
 elif args.optimizer == "rmsprop":
     opt_fun = RmspropAuto
 optimizer = opt_fun(cross_entropy, θs, args.lr, dec=args.dec)
