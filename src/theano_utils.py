@@ -158,6 +158,34 @@ class AdamManual:
             θ.set_value(θ_old - α_hat * m / (np.sqrt(v) + self.ε), borrow=True)
 
 
+class AdamaxAuto:
+
+    typ = "auto"
+
+    def __init__(self, f, θs, α=0.002, β1=0.9, β2=0.999, ε=1e-8, dec=0.):
+        α, β1, β2, ε, dec = [np.cast[floatX](h) for h in [α, β1, β2, ε, dec]]
+
+        t = theano.shared(0, name="t")
+        self.ms = [theano.shared(np.zeros(θ.shape.eval(), dtype=floatX), borrow=True, name="m") for θ in θs]
+        self.us = [theano.shared(np.zeros(θ.shape.eval(), dtype=floatX), borrow=True, name="u") for θ in θs]
+
+        gs = T.grad(f, θs)
+        t_u = (t, t + 1)
+        m_us = [(m, β1 * m + (one - β1) * g) for m, g in zip(self.ms, gs)]
+        u_us = [(u, T.maximum(β2 * u, T.abs_(g))) for u, g in zip(self.us, gs)]
+        α_hat = α / (one - T.cast(T.pow(β1, t_u[1]), floatX))
+        α_hat = α_hat / (one + (t_u[1] * dec))
+        θ_us = [(θ, θ - α_hat * m_u[1] / (u_u[1] + ε)) for θ, m_u, u_u in zip(θs, m_us, u_us)]
+        self.updates = m_us + u_us + [t_u] + θ_us
+
+    def __call__(self):
+        return self.updates
+
+    def free_shared(self):
+        for p in self.ms + self.vs:
+            free_shared_variable(p)
+
+
 def dropout_layer(input_, p, srng, train_premasks, train_postmasks, dropout_mask=None):
     """
     input_: tensor on which dropout should be applied.
