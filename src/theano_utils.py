@@ -172,7 +172,7 @@ class AdamaxAuto:
         gs = T.grad(f, θs)
         t_u = (t, t + 1)
         m_us = [(m, β1 * m + (one - β1) * g) for m, g in zip(self.ms, gs)]
-        u_us = [(u, T.maximum(β2 * u, T.abs_(g))) for u, g in zip(self.us, gs)]
+        u_us = [(u, T.cast(T.maximum(β2 * u, T.abs_(g)), floatX)) for u, g in zip(self.us, gs)]
         α_hat = α / (one - T.cast(T.pow(β1, t_u[1]), floatX))
         α_hat = α_hat / (one + (t_u[1] * dec))
         θ_us = [(θ, θ - α_hat * m_u[1] / (u_u[1] + ε)) for θ, m_u, u_u in zip(θs, m_us, u_us)]
