@@ -15,10 +15,10 @@ All results from the paper, and more are in the `data` folder. For example `data
 ## Citation
 If you find this code useful, please cite
 ```
-@misc{1611.01505,
-  Author = {Jayanth Koushik and Hiroaki Hayashi},
-  Title = {Improving Stochastic Gradient Descent with Feedback},
-  Year = {2016},
-  Eprint = {arXiv:1611.01505},
+@article{koushik2016improving,
+  title={Improving Stochastic Gradient Descent with Feedback},
+  author={Koushik, Jayanth and Hayashi, Hiroaki},
+  journal={arXiv preprint arXiv:1611.01505},
+  year={2016}
 }
 ```
