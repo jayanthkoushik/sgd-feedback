@@ -15,6 +15,7 @@ from gridopts import *
 from models import *
 from eve import EveMonitor
 from babi_sitter import *
+from timelogger import TimeLogger
 
 def pre_process_image(args):
     (X_train, y_train), _ = DATASET_INFO[args.dataset]["loader"]()
@@ -111,11 +112,13 @@ for opt in grid_opt:
     else:
         model = MODEL_FACTORIES[args.model](X_train.shape[1:], DATASET_INFO[args.dataset]["nb_classes"])
         model.compile(optimizer=opt, loss="categorical_crossentropy", metrics=["accuracy"])
+
+    time_logger = TimeLogger()
+    callbacks = [time_logger]
     if args.optimizer == "eve":
         eve_monitor = EveMonitor()
-        callbacks = [eve_monitor]
-    else:
-        callbacks = []
+        callbacks.append(eve_monitor)
+
     history = model.fit(x=X_train, y=y_train, batch_size=args.batch_size, nb_epoch=args.epochs, verbose=1, callbacks=callbacks)
 
     if history.history["loss"][-1] < best_final_loss:
@@ -123,6 +126,7 @@ for opt in grid_opt:
         best_loss_history = history.history["loss"]
         best_opt_config = opt.get_config()
         best_decay = opt.decay.get_value()
+        best_run_epoch_times = time_logger.epoch_times
         if args.optimizer == "eve":
             best_eve_monitor = eve_monitor
 
@@ -132,6 +136,7 @@ save_data = {
     "best_opt_config": best_opt_config,
     "best_decay": best_decay,
     "cmd_args": args,
+    "best_run_epoch_times": best_run_epoch_times,
 }
 if args.optimizer == "eve":
     save_data["best_batch_loss_history"] = best_eve_monitor.batch_losses
