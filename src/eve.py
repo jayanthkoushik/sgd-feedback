@@ -41,16 +41,18 @@ class Eve(Optimizer):
         d_t = K.switch(K.greater(t, 1), d_t, 1.)
         self.updates.append(K.update(self.d, d_t))
 
+        lr_hat = self.lr * K.sqrt(1. - K.pow(self.beta_2, t)) / (1. - K.pow(self.beta_1, t)) / (1. + (self.iterations * self.decay))
+
         for p, g, m, v in zip(params, grads, ms, vs):
             m_t = (self.beta_1 * m) + (1. - self.beta_1) * g
-            mhat_t = m_t / (1. - K.pow(self.beta_1, t))
+            #mhat_t = m_t / (1. - K.pow(self.beta_1, t))
             self.updates.append(K.update(m, m_t))
 
             v_t = (self.beta_2 * v) + (1. - self.beta_2) * K.square(g)
-            vhat_t = v_t / (1. - K.pow(self.beta_2, t))
+            #vhat_t = v_t / (1. - K.pow(self.beta_2, t))
             self.updates.append(K.update(v, v_t))
 
-            p_t = p - (self.lr / (1. + (self.iterations * self.decay))) * mhat_t / ((K.sqrt(vhat_t) * d_t) + self.epsilon)
+            p_t = p - lr_hat * m_t / ((K.sqrt(v_t) * d_t) + self.epsilon)
             self.updates.append(K.update(p, p_t))
 
         self.updates.append(K.update(loss_prev, loss_hat))
