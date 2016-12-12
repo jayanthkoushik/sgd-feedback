@@ -4,6 +4,7 @@ import os
 import pickle
 import tarfile
 from argparse import ArgumentParser
+from time import time
 
 import numpy as np
 from keras.preprocessing import sequence
@@ -119,7 +120,9 @@ for opt in grid_opt:
         eve_monitor = EveMonitor()
         callbacks.append(eve_monitor)
 
+    total_time_s = time()
     history = model.fit(x=X_train, y=y_train, batch_size=args.batch_size, nb_epoch=args.epochs, verbose=1, callbacks=callbacks)
+    total_time = time() - total_time_s
 
     if history.history["loss"][-1] < best_final_loss:
         best_final_loss = history.history["loss"][-1]
@@ -127,6 +130,7 @@ for opt in grid_opt:
         best_opt_config = opt.get_config()
         best_decay = opt.decay.get_value()
         best_run_epoch_times = time_logger.epoch_times
+        best_run_total_time = total_time
         if args.optimizer == "eve":
             best_eve_monitor = eve_monitor
 
@@ -137,6 +141,7 @@ save_data = {
     "best_decay": best_decay,
     "cmd_args": args,
     "best_run_epoch_times": best_run_epoch_times,
+    "best_run_total_time": best_run_total_time,
 }
 if args.optimizer == "eve":
     save_data["best_batch_loss_history"] = best_eve_monitor.batch_losses
