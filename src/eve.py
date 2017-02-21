@@ -25,6 +25,7 @@ class Eve(Optimizer):
         t = self.iterations + 1
 
         loss_prev = K.variable(0)
+        loss_hat_prev = K.variable(0)
         shapes = [K.get_variable_shape(p) for p in params]
         ms = [K.zeros(shape) for shape in shapes]
         vs = [K.zeros(shape) for shape in shapes]
@@ -34,10 +35,10 @@ class Eve(Optimizer):
         loss_ch_fact = loss / loss_prev
         loss_ch_fact = K.switch(K.lesser(loss_ch_fact, ch_fact_lbound), ch_fact_lbound, loss_ch_fact)
         loss_ch_fact = K.switch(K.greater(loss_ch_fact, ch_fact_ubound), ch_fact_ubound, loss_ch_fact)
-        loss_hat = K.switch(K.greater(t, 1), loss_prev * loss_ch_fact, loss)
+        loss_hat = K.switch(K.greater(t, 1), loss_hat_prev * loss_ch_fact, loss)
 
-        d_den = K.switch(K.greater(loss_hat, loss_prev), loss_prev, loss_hat)
-        d_t = (self.beta_3 * self.d) + (1. - self.beta_3) * K.abs((loss_hat - loss_prev) / d_den)
+        d_den = K.switch(K.greater(loss_hat, loss_hat_prev), loss_hat_prev, loss_hat)
+        d_t = (self.beta_3 * self.d) + (1. - self.beta_3) * K.abs((loss_hat - loss_hat_prev) / d_den)
         d_t = K.switch(K.greater(t, 1), d_t, 1.)
         self.updates.append(K.update(self.d, d_t))
 
@@ -55,7 +56,8 @@ class Eve(Optimizer):
             p_t = p - lr_hat * m_t / ((K.sqrt(v_t) * d_t) + self.epsilon)
             self.updates.append(K.update(p, p_t))
 
-        self.updates.append(K.update(loss_prev, loss_hat))
+        self.updates.append(K.update(loss_prev, loss))
+        self.updates.append(K.update(loss_hat_prev, loss_hat))
         return self.updates
 
     def get_config(self):
@@ -80,4 +82,3 @@ class EveMonitor(Callback):
     def on_batch_end(self, batch, logs={}):
         self.batch_losses.append(logs.get("loss"))
         self.ds.append(self.model.optimizer.d.get_value())
-
